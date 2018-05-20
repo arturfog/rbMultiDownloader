@@ -18,13 +18,13 @@ class Optparse
     options.txt = ''
     options.parts = 1
     options.verbose = false
-    options.path = ''
-    options.outDir = '/tmp/'
+    options.filename = ''
+    options.outDir = Dir.pwd
     options.user = ''
     options.pass = ''
 
     opt_parser = OptionParser.new do |opts|
-      opts.banner = "Usage: example.rb [options]"
+      opts.banner = "Usage: main.rb [options]"
 
       opts.separator ""
       opts.separator "Specific options:"
@@ -43,8 +43,8 @@ class Optparse
         options.txt = txt
       end
       # --------------------------------------------------------
-      opts.on("-O", "--outPath PATH", "Path where file will be downloaded") do |path|
-        options.path = path
+      opts.on("-O", "--out PATH", "Filename of file to be downloaded") do |filename|
+        options.filename = filename
       end
       # --------------------------------------------------------
       opts.on("-d", "--dir PATH", "Dir where files will be downloaded") do |outDir|
@@ -81,6 +81,12 @@ class Optparse
   end # parse()
 end # class Optparse
 
+def getDownloadProgress(dl)
+  p = dl.progress()
+  filename = dl.get_link().filename
+  puts "#{filename} #{p[0]} - #{p[1]}"
+end
+
 def main()
   options = Optparse.parse(ARGV)
   pp options
@@ -88,15 +94,16 @@ def main()
   dl = HTTPDownloader.new()
   list = DownloadList.new()
   if options.url.empty? == false
-    list.add(options.url.strip, options.parts)
+    list.add(options.url.strip, options.parts, options.filename, options.outDir)
   end
 
   if options.txt.empty? == false
-    list.add_from_file(options.txt.strip)
+    list.add_from_file(options.txt.strip, options.outDir)
   end
 
   for link in list.getDlList()
-    dlThread = dl.download_http(link, options.outDir + '/hosts1.txt')
+    dl.download_http(link)
+    getDownloadProgress(dl)
   end
 end
 

@@ -7,6 +7,7 @@ require 'thread'
 class HTTPDownloader
   MAX_REDIRECTS = 10
   MAX_PARTS = 4
+
   def initialize
     @link = nil
     @total_bytes = 0
@@ -31,6 +32,10 @@ class HTTPDownloader
   def parts=(parts)
     @parts = parts > MAX_PARTS || parts < 0 ? 1 : parts
   end
+
+  def create_empty_file(path)
+
+  end
   # --------------------------------------------------------
   def redirects_limit=(limit)
     @redirects_limit = limit > MAX_REDIRECTS || limit < 0 ? MAX_REDIRECTS : limit
@@ -53,35 +58,36 @@ class HTTPDownloader
   # --------------------------------------------------------
   # downloads file from http server to selected location
   # has support for 30x redirects
-  def download_http(link, file_path)
-    if !isHttpLink?(link.address) || file_path.to_s.empty?
+  def download_http(link)
+    if !isHttpLink?(link.address) || link.filename.to_s.empty?
       raise ArgumentError, 'URL and file path cannot be empty'
     end
     clean
     @link = link
-    @file_path = file_path.to_s
-    puts "Downloading [#{link.address}] to #{file_path}"
+    @file_path = link.outDir + link.filename
+    puts "Downloading [#{link.address}] to #{link.path.to_s}"
     handle_redirect(@link.address, @redirects_limit)
   end
   # --------------------------------------------------------
   def redirect_success(url, response)
     # success, we got correct address of resource
-    self.total_bytes = response['content_length'].to_i
+    self.total_bytes = response['Content-Length'].to_i
     @link.address = url
 
     if self.total_bytes < 65536
       @link.chunks = 1
     end
 
-    puts "Starting thread for: #{url}"
     chunk_size_bytes = self.total_bytes / @link.chunks
     start_byte = 0
-    end_byte = 0
+    end_byte = chunk_size_bytes
 
-    #for i in 1..@link.chunks
-    #  @threads[i] = Thread.new { dl() }
-    #  @threads[i].join
-    #end
+    puts "Starting thread for: #{url} bytes=#{start_byte}-#{end_byte}"
+
+    for i in 1..@link.chunks
+      @threads[i] = Thread.new { dl(start_byte, end_byte) }
+      @threads[i].join
+    end
   end
   # --------------------------------------------------------
   def redirect_next(limit, response)
@@ -108,7 +114,7 @@ class HTTPDownloader
     end
   end
   # --------------------------------------------------------
-  private def dl
+  private def dl(start_byte, end_byte)
     self.downloaded_bytes = 0
     uri = URI(@link.address)
     tmp_file_path = "#{@file_path}.tmp"
@@ -116,7 +122,7 @@ class HTTPDownloader
     warn "downlading #{@link.address} to #{tmp_file_path}"
     Net::HTTP.start(uri.host, uri.port) do |http|
       request = Net::HTTP::Get.new(uri)
-      request['Range'] = 'bytes=64-1024'
+      request['Range'] = "bytes=#{start_byte}-#{end_byte}"
       request.basic_auth @link.user, @link.pass unless @link.user.empty?
 
       http.request request do |response|
@@ -145,5 +151,9 @@ class HTTPDownloader
     @mutex.synchronize do
       [@downloaded_bytes, @total_bytes]
     end
+  end
+  # --------------------------------------------------------
+  def get_link()
+    @link
   end
 end
