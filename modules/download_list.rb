@@ -1,31 +1,39 @@
+require 'uri'
+
 class DownloadList
   def initialize
-    @httpList = []
-    @ftpList = []
-
+    @dlList = []
   end
+  def create_dl_item(address, chunks, user, pass)
+    link = OpenStruct.new
+    link.address = address
+    link.chunks = chunks
+    link.user = user
+    link.pass = pass
 
+    link
+  end
+  # --------------------------------------------------------
   def isHttpLink?(address)
-    false
+    address =~URI::regexp(%w(http https))
   end
-
-  def isFtpLink(address)
-    false
+  # --------------------------------------------------------
+  def isFtpLink?(address)
+    address =~URI::regexp(%w(ftp))
   end
-
+  # --------------------------------------------------------
+  def getDlList()
+    @dlList
+  end
+  # --------------------------------------------------------
   def add(address, chunks = 1, user='', pass='')
     if isHttpLink?(address)
-      addHttp(address, chunks)
-    elsif isFtpLink(address)
-      addFtp(address, chunks)
+      link = create_dl_item(address, chunks, user, pass)
+      @dlList.append(link)
     end
   end
+  # --------------------------------------------------------
+  def add_from_file(file_path)
 
-  private def addHttp(url, chunks)
-    @httpList.append(url)
-  end
-
-  private def addFtp(url, chunks)
-    @ftpList.append(url)
   end
 end

@@ -6,10 +6,11 @@ class HttpSessionManager
   def getCookie()
     pass
   end
-
+  # --------------------------------------------------------
   def get_website_mapping(file)
-    @urls_configs['www.catshare.net'] = 'catshare.xml'
+    @urls_configs['www.dropbox.com'] = 'dropbox.xml'
   end
+  # --------------------------------------------------------
   # searches dir for XML files with login configurations
   def load_available_configs(dir)
     unless Dir.exist?(dir)
@@ -18,7 +19,7 @@ class HttpSessionManager
       end
     end
   end
-
+  # --------------------------------------------------------
   # loads login configuration for selected website ie. dropbox
   def load_config_for_url(base_url)
     file_path = @urls_configs[base_url].to_s
