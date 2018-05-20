@@ -29,7 +29,7 @@ class Optparse
       opts.separator ""
       opts.separator "Specific options:"
       # --------------------------------------------------------
-      opts.on("-u", "--url URL",
+      opts.on("-a", "--url URL",
               "URL to download") do |url|
         options.url = url
       end
@@ -39,7 +39,7 @@ class Optparse
         options.parts = parts
       end
       # --------------------------------------------------------
-      opts.on("-t", "--txt PATH", "Path to file with url list") do |txt|
+      opts.on("-l", "--list PATH", "Path to file with url list") do |txt|
         options.txt = txt
       end
       # --------------------------------------------------------
@@ -87,12 +87,12 @@ def main()
 
   dl = HTTPDownloader.new()
   list = DownloadList.new()
-  if options.url != ''
-    list.add(options.url, options.parts)
+  if options.url.empty? == false
+    list.add(options.url.strip, options.parts)
   end
 
-  if options.txt != ''
-    list.add_from_file(options.txt)
+  if options.txt.empty? == false
+    list.add_from_file(options.txt.strip)
   end
 
   for link in list.getDlList()

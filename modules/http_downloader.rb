@@ -60,7 +60,7 @@ class HTTPDownloader
     clean
     @link = link
     @file_path = file_path.to_s
-
+    puts "Downloading [#{link.address}] to #{file_path}"
     handle_redirect(@link.address, @redirects_limit)
   end
   # --------------------------------------------------------
@@ -73,14 +73,15 @@ class HTTPDownloader
       @link.chunks = 1
     end
 
+    puts "Starting thread for: #{url}"
     chunk_size_bytes = self.total_bytes / @link.chunks
     start_byte = 0
     end_byte = 0
 
-    for i in 1..@link.chunks
-      @threads[i] = Thread.new { dl() }
-      @threads[i].join
-    end
+    #for i in 1..@link.chunks
+    #  @threads[i] = Thread.new { dl() }
+    #  @threads[i].join
+    #end
   end
   # --------------------------------------------------------
   def redirect_next(limit, response)
