@@ -80,13 +80,57 @@ class Optparse
     options
   end # parse()
 end # class Optparse
+# --------------------------------------------------------
+def gen_progressbar(filename ,downloaded, total)
+  dl_kb = downloaded.to_i / 1024
+  total_kb = total.to_i / 1024
+  precentage = dl_kb.to_f / total_kb * 100;
 
-def getDownloadProgress(dl)
-  p = dl.progress()
-  filename = dl.get_link().filename
-  puts "#{filename} #{p[0]} - #{p[1]}"
+  print "#{filename}: ["
+
+  for i in 1..20
+    if (precentage.to_i / 10) >= (i / 2)
+      print "#"
+    else
+      print "-"
+    end
+
+  end
+  print "] #{precentage.to_i}% [#{dl_kb} kB / #{total_kb} kB]"
 end
 
+def parse_eta(eta_sec)
+  hours = eta_sec / 3600
+  minutes = (eta_sec % 3600) / 60
+  seconds = (eta_sec % 60)
+
+  [hours, minutes, seconds]
+end
+# --------------------------------------------------------
+def get_download_speed_eta(dl, total, duration_sec)
+  dl_speed = 65536
+  eta_sec = (total - dl) / dl_speed
+  eta = parse_eta(eta_sec)
+  print " (kB/S: #{dl_speed} ETA: #{eta[0]}:#{eta[1]}:#{eta[2]}) \r"
+  [dl_speed, eta]
+end
+# --------------------------------------------------------
+def get_download_progress(dl)
+  while dl.downloading?
+    p = dl.progress()
+    filename = dl.get_link.filename
+    gen_progressbar(filename, p[0], p[1])
+    get_download_speed_eta(p[0], p[1], 1)
+    sleep(0.1)
+  end
+  puts ""
+end
+# --------------------------------------------------------
+def show_progress(dl)
+  @thread = Thread.new { get_download_progress(dl) }
+  @thread.join
+end
+# --------------------------------------------------------
 def main()
   options = Optparse.parse(ARGV)
   pp options
@@ -103,8 +147,8 @@ def main()
 
   for link in list.getDlList()
     dl.download_http(link)
-    getDownloadProgress(dl)
+    get_download_progress(dl)
   end
 end
-
+# --------------------------------------------------------
 main

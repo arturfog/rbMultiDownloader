@@ -1,1 +1,2 @@
+http://localhost/hosts.txt
 http://localhost/mini.iso
