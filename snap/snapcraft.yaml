@@ -1,0 +1,6 @@
+name: rbmultidownloader
+version: '0.1.0'
+summary: Ruby file download manager
+description: Ruby file download manager
+grade: 'stable'
+confinement: 'strict'
