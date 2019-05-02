@@ -1,4 +1,5 @@
 require 'uri'
+require 'sqlite3'
 
 class DownloadList
   def initialize
@@ -22,6 +23,28 @@ class DownloadList
   # --------------------------------------------------------
   def isFtpLink?(address)
     address =~URI::regexp(%w(ftp))
+  end
+  # --------------------------------------------------------
+  def openDB()
+    db = SQLite3::Database.new "dl.db"
+    puts db.get_first_value 'SELECT SQLITE_VERSION()'
+    rescue SQLite3::Exception => e 
+      puts "Exception occurred"
+      puts e
+    ensure
+      db.close if db
+  end
+  # --------------------------------------------------------
+  def addDLToDatabase(link, chunks)
+    db = SQLite3::Database.open "dl.db"
+    db.execute "CREATE TABLE IF NOT EXISTS downloads(Id INTEGER PRIMARY KEY, 
+        link TEXT, chunks INT)"
+    db.execute "INSERT INTO downloads VALUES(1,'#{link}',#{chunks})"
+    rescue SQLite3::Exception => e 
+        puts "Exception occurred"
+        puts e
+    ensure
+        db.close if db
   end
   # --------------------------------------------------------
   def getDlList()

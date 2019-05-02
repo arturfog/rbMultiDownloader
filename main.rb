@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require_relative 'modules/http_downloader'
 require_relative 'modules/download_list'
 require_relative 'modules/http_session_manager'
@@ -71,12 +72,13 @@ class Optparse
       end
       # --------------------------------------------------------
       opts.on_tail("--version", "Show version") do
-        puts ::Version.join('.')
+        puts "0.1a"
         exit
       end
     end
 
     opt_parser.parse!(args)
+    # return
     options
   end # parse()
 end # class Optparse

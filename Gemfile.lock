@@ -1,13 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    sqlite3 (1.4.1)
     tk (0.2.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  sqlite3
   tk
 
 BUNDLED WITH
-   1.16.2
+   2.0.1
